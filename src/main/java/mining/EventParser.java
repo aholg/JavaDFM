@@ -7,17 +7,14 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class EventParser {
 
-    public static List<Event> parse(Stream<String> lines) {
+    public static Stream<Event> parse(Stream<String> lines) {
         return lines
                 .map(line -> line.split(","))
-                .map(EventParser::extractEvent)
-                .collect(Collectors.toList());
+                .map(EventParser::extractEvent);
     }
 
     private static Event extractEvent(String[] values) {

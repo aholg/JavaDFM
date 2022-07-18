@@ -1,9 +1,11 @@
 package mining;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import models.Event;
+
+import java.io.*;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Extracts the direct follower matrix from a log.
@@ -23,7 +25,9 @@ public class DirectFollowerExtraction {
         try {
             BufferedReader br = new BufferedReader(new FileReader(logFile));
             br.readLine();
-            EventParser.parse(br.lines());
+
+            Stream<Event> events = EventParser.parse(br.lines());
+            TraceService.createTraces(events);
         } catch (FileNotFoundException ex) {
             System.out.println("File does not exist. Exiting.");
         }
