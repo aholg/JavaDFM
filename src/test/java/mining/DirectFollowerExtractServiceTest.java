@@ -23,7 +23,7 @@ public class DirectFollowerExtractServiceTest {
     public void shouldReturnEmptyMatrixForASingleEvent() {
         String traceId = "someTrace";
         List<Trace> traces = Collections.singletonList(
-                new Trace(traceId, Collections.singletonList(new Event(traceId, "someActivity", ZonedDateTime.now()))));
+                new Trace(traceId, Collections.singletonList(new Event(traceId, "someActivity", ZonedDateTime.now(), ZonedDateTime.now()))));
 
         Map<String, Map<String, Integer>> directFollowerMatrix =
                 DirectFollowerExtractService.createDirectFollowerMatrix(traces);
@@ -38,8 +38,8 @@ public class DirectFollowerExtractServiceTest {
         String activity2 = "someActivity2";
         List<Trace> traces = Collections.singletonList(
                 new Trace(traceId, Arrays.asList(
-                        new Event(traceId, activity1, ZonedDateTime.now()),
-                        new Event(traceId, activity2, ZonedDateTime.now()))));
+                        new Event(traceId, activity1, ZonedDateTime.now(), ZonedDateTime.now()),
+                        new Event(traceId, activity2, ZonedDateTime.now(), ZonedDateTime.now()))));
 
         Map<String, Map<String, Integer>> directFollowerMatrix =
                 DirectFollowerExtractService.createDirectFollowerMatrix(traces);
@@ -58,8 +58,8 @@ public class DirectFollowerExtractServiceTest {
         String activity1 = "someActivity1";
         String activity2 = "someActivity2";
         Trace trace = new Trace(traceId, Arrays.asList(
-                new Event(traceId, activity1, ZonedDateTime.now()),
-                new Event(traceId, activity2, ZonedDateTime.now())));
+                new Event(traceId, activity1, ZonedDateTime.now(), ZonedDateTime.now()),
+                new Event(traceId, activity2, ZonedDateTime.now(), ZonedDateTime.now())));
         List<Trace> traces = Arrays.asList(trace, trace);
 
         Map<String, Map<String, Integer>> directFollowerMatrix =
@@ -80,11 +80,11 @@ public class DirectFollowerExtractServiceTest {
         String activity2 = "someActivity2";
         String activity3 = "someActivity3";
         Trace trace1 = new Trace(traceId, Arrays.asList(
-                new Event(traceId, activity1, ZonedDateTime.now()),
-                new Event(traceId, activity2, ZonedDateTime.now())));
+                new Event(traceId, activity1, ZonedDateTime.now(), ZonedDateTime.now()),
+                new Event(traceId, activity2, ZonedDateTime.now(), ZonedDateTime.now())));
         Trace trace2 = new Trace(traceId, Arrays.asList(
-                new Event(traceId, activity3, ZonedDateTime.now()),
-                new Event(traceId, activity2, ZonedDateTime.now())));
+                new Event(traceId, activity3, ZonedDateTime.now(), ZonedDateTime.now()),
+                new Event(traceId, activity2, ZonedDateTime.now(), ZonedDateTime.now())));
         List<Trace> traces = Arrays.asList(trace1, trace2);
 
         Map<String, Map<String, Integer>> directFollowerMatrix =

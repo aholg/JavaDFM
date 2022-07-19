@@ -5,9 +5,9 @@ import models.Trace;
 import org.junit.Test;
 
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -15,16 +15,17 @@ public class TraceServiceTest {
 
     @Test
     public void shouldReturnEmptyForEmptyInput() {
-        List<Trace> result = TraceService.createTraces(Stream.empty());
+        List<Trace> result = TraceService.createTraces(Collections.emptyList(), ZonedDateTime.now(), ZonedDateTime.now());
 
         assertEquals(Collections.emptyList(), result);
     }
 
     @Test
     public void shouldCreateATrace() {
-        Event expectedEvent = new Event("someTraceId", "someActivity", ZonedDateTime.now());
-        Stream<Event> events = Stream.of(expectedEvent);
-        List<Trace> result = TraceService.createTraces(events);
+        ZonedDateTime now = ZonedDateTime.now();
+        Event expectedEvent = new Event("someTraceId", "someActivity", now, now);
+        List<Event> events = Collections.singletonList(expectedEvent);
+        List<Trace> result = TraceService.createTraces(events, ZonedDateTime.now().minusHours(2), ZonedDateTime.now().plusHours(1));
 
         assertFalse(result.isEmpty());
         assertFalse(result.get(0).getEvents().isEmpty());
@@ -34,10 +35,10 @@ public class TraceServiceTest {
     @Test
     public void shouldGroupEventsWithSameTraceIds() {
         ZonedDateTime now = ZonedDateTime.now();
-        Event event1 = new Event("traceId1", "someActivity1", now);
-        Event event2 = new Event("traceId1", "someActivity2", now);
-        Stream<Event> events = Stream.of(event1, event2);
-        List<Trace> result = TraceService.createTraces(events);
+        Event event1 = new Event("traceId1", "someActivity1", now, now);
+        Event event2 = new Event("traceId1", "someActivity2", now, now);
+        List<Event> events = Arrays.asList(event1, event2);
+        List<Trace> result = TraceService.createTraces(events, ZonedDateTime.now().minusHours(2), ZonedDateTime.now().plusHours(1));
 
         assertEquals(1, result.size());
         assertSame("traceId1", result.get(0).getTraceId());
@@ -50,11 +51,11 @@ public class TraceServiceTest {
     @Test
     public void shouldSortGroupedEventsWithOldestFirst() {
         ZonedDateTime now = ZonedDateTime.now();
-        Event event1 = new Event("traceId1", "someActivity1", now.minusHours(1));
-        Event event2 = new Event("traceId1", "someActivity2", now);
-        Event event3 = new Event("traceId1", "someActivity2", now.minusHours(10));
-        Stream<Event> events = Stream.of(event1, event2, event3);
-        List<Trace> result = TraceService.createTraces(events);
+        Event event1 = new Event("traceId1", "someActivity1", now.minusHours(1), now);
+        Event event2 = new Event("traceId1", "someActivity2", now, now);
+        Event event3 = new Event("traceId1", "someActivity2", now.minusHours(10), now);
+        List<Event> events = Arrays.asList(event1, event2, event3);
+        List<Trace> result = TraceService.createTraces(events, ZonedDateTime.now().minusHours(20), ZonedDateTime.now().plusHours(1));
 
         assertEquals(1, result.size());
         assertSame("traceId1", result.get(0).getTraceId());
@@ -69,11 +70,22 @@ public class TraceServiceTest {
     @Test
     public void shouldCreateANewTraceForDifferentTraceIds() {
         ZonedDateTime now = ZonedDateTime.now();
-        Event event1 = new Event("traceId1", "someActivity1", now.minusHours(1));
-        Event event2 = new Event("traceId2", "someActivity2", now);
-        Stream<Event> events = Stream.of(event1, event2);
-        List<Trace> result = TraceService.createTraces(events);
+        Event event1 = new Event("traceId1", "someActivity1", now.minusHours(1), now);
+        Event event2 = new Event("traceId2", "someActivity2", now, now);
+        List<Event> events = Arrays.asList(event1, event2);
+        List<Trace> result = TraceService.createTraces(events, ZonedDateTime.now().minusHours(2), ZonedDateTime.now().plusHours(1));
 
         assertEquals(2, result.size());
+    }
+
+    @Test
+    public void shouldFilterOutEventsThatIsOutsideTimeIntervall() {
+        ZonedDateTime now = ZonedDateTime.now();
+        Event event1 = new Event("traceId1", "someActivity1", now.minusHours(1), now);
+        Event event2 = new Event("traceId2", "someActivity2", now.minusHours(3), now);
+        List<Event> events = Arrays.asList(event1, event2);
+        List<Trace> result = TraceService.createTraces(events, ZonedDateTime.now().minusHours(2), ZonedDateTime.now().plusHours(1));
+
+        assertEquals(1, result.size());
     }
 }

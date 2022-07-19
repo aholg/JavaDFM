@@ -3,14 +3,15 @@ package mining;
 import models.Event;
 import models.Trace;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * Extracts the direct follower matrix from a log.
@@ -30,15 +31,37 @@ public class DirectFollowerExtraction {
         try {
             BufferedReader br = new BufferedReader(new FileReader(logFile));
             br.readLine();
+            List<Event> events = EventParser.parse(br.lines());
+            BufferedReader cmdReader = new BufferedReader(new InputStreamReader(System.in));
 
-            Stream<Event> events = EventParser.parse(br.lines());
-            List<Trace> traces = TraceService.createTraces(events);
-            Map<String, Map<String, Integer>> directFollowerMatrix =
-                    DirectFollowerExtractService.createDirectFollowerMatrix(traces);
+            while (true) {
+                ZonedDateTime startDate = readInput("Enter start date in format yyyy/MM/dd HH:mm:ss. Or type 'exit' to exit.", cmdReader);
+                ZonedDateTime endDate = readInput("Enter end date in format yyyy/MM/dd HH:mm:ss. Or type 'exit' to exit.", cmdReader);
 
-            printDirectFollowerMatrix(directFollowerMatrix);
+                List<Trace> traces = TraceService.createTraces(events, startDate, endDate);
+                Map<String, Map<String, Integer>> directFollowerMatrix =
+                        DirectFollowerExtractService.createDirectFollowerMatrix(traces);
+
+                printDirectFollowerMatrix(directFollowerMatrix);
+            }
         } catch (FileNotFoundException ex) {
             System.out.println("File does not exist. Exiting.");
+        }
+    }
+
+    private static ZonedDateTime readInput(String promptMessage, BufferedReader cmdReader) throws IOException {
+        System.out.println(promptMessage);
+        String input = cmdReader.readLine();
+
+        if (input.equals("exit")) {
+            System.exit(0);
+        }
+
+        try {
+            return LocalDateTime.parse(input, DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")).atZone(ZoneOffset.UTC);
+        } catch (DateTimeParseException ex) {
+            System.out.println("Invalid date format. Please use format yyyy/MM/dd HH:mm:ss");
+            return readInput(promptMessage, cmdReader);
         }
     }
 
@@ -56,5 +79,6 @@ public class DirectFollowerExtraction {
                 System.out.printf("%30s", directFollowCount);
             });
         });
+        System.out.println();
     }
 }
