@@ -1,11 +1,16 @@
 package mining;
 
 import models.Event;
+import models.Trace;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.groupingBy;
 
 /**
  * Extracts the direct follower matrix from a log.
@@ -27,9 +32,29 @@ public class DirectFollowerExtraction {
             br.readLine();
 
             Stream<Event> events = EventParser.parse(br.lines());
-            TraceService.createTraces(events);
+            List<Trace> traces = TraceService.createTraces(events);
+            Map<String, Map<String, Integer>> directFollowerMatrix =
+                    DirectFollowerExtractService.createDirectFollowerMatrix(traces);
+
+            printDirectFollowerMatrix(directFollowerMatrix);
         } catch (FileNotFoundException ex) {
             System.out.println("File does not exist. Exiting.");
         }
+    }
+
+    private static void printDirectFollowerMatrix(Map<String, Map<String, Integer>> directFollowerMatrix) {
+        Set<String> headerActivities = directFollowerMatrix.keySet();
+        System.out.printf("%30s", "");
+        headerActivities.forEach(k -> System.out.printf("%30s", k));
+
+        directFollowerMatrix.forEach((columnHeaderActivity, activities) -> {
+            System.out.println();
+            System.out.printf("%30s", columnHeaderActivity);
+
+            headerActivities.forEach(activity -> {
+                Integer directFollowCount = activities.getOrDefault(activity, 0);
+                System.out.printf("%30s", directFollowCount);
+            });
+        });
     }
 }
