@@ -23,13 +23,13 @@ public class DirectFollowerExtraction {
     public static void main(String[] args) throws Exception {
 
         // Get the log file from the resources
-        File logFile = new File(DirectFollowerExtraction.class.getResource("/IncidentExample.csv").getPath());
+        InputStreamReader logFile = new InputStreamReader(DirectFollowerExtraction.class.getResourceAsStream("/IncidentExample.csv"));
 
-        System.out.println("Please use the events in the log-file located at " + logFile.getAbsolutePath() +
+        System.out.println("Please use the events in the log-file located at /IncidentExample.csv" +
                 " to build a direct follower matrix.");
 
         try {
-            BufferedReader br = new BufferedReader(new FileReader(logFile));
+            BufferedReader br = new BufferedReader(logFile);
             br.readLine();
             List<Event> events = EventParser.parse(br.lines());
             BufferedReader cmdReader = new BufferedReader(new InputStreamReader(System.in));
